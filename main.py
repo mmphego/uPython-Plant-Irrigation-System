@@ -17,8 +17,9 @@ class MoistureSensor(object):
     def __init__(self, adc_pin, config_dict):
         self.adc_pin = adc_pin
         self.sensor_cal = config_dict
-        self.setup_adc()
+        self.setup_adc
 
+    @property
     def setup_adc(self):
         self.adc = machine.ADC(self.adc_pin)
 
@@ -70,9 +71,7 @@ class MoistureSensor(object):
     def run(self):
         try:
             samples = self.read_samples()
-            print(samples)
             sampled_adc = self.average(samples)
-            print("sampled_adc: %s" % sampled_adc)
             SoilMoistPerc = self.adc_map(
                 sampled_adc, self.sensor_cal["wet"], self.sensor_cal["dry"], 0, 100)
             print("Soil Moisture Sensor: %.2f%% \t %s" % (SoilMoistPerc, current_time()))
