@@ -1,13 +1,21 @@
 import json
-import time
+import ntptime
+import machine
+import utime
 
+def set_tz(utc_shift=2):
+    # Timezone setup
+    ntptime.settime()
+    rtc = machine.RTC()
+    tm = utime.localtime(utime.mktime(utime.localtime()) + (utc_shift*3600))
+    tm = tm[0:3] + (0,) + tm[3:6] + (0,)
+    rtc.datetime(tm)
 
 def current_time():
-    year, month, day, hours, mins, secs, _, _ = time.localtime()
-    if secs < 10:
-        secs = "0" + str(secs)
-    if int(mins) < 10:
-        mins = "0" + str(mins)
+    year, month, day, hours, mins, secs, _, _ = utime.localtime()
+    hours = "0" + str(hours) if hours < 10 else hours
+    secs = "0" + str(secs) if secs < 10 else secs
+    mins = "0" + str(mins) if mins < 10 else secs
     datetime = "%s-%s-%s %s:%s:%s" % (year, month, day, hours, mins, secs)
     return datetime
 
