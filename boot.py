@@ -5,7 +5,7 @@ import esp
 import machine
 import utime
 
-from utils import PackageInstaller, read_config, set_tz
+from utils import read_config, set_tz
 from wifi import disable_wifi_ap, wifi_connect, wifi_disconnect
 
 gc.collect()
@@ -41,7 +41,6 @@ if __name__ == "__main__":
     run = InitialSetUp(CONFIG)
     run.setup_wifi()  # Connect to WIFI
     set_tz()  # Set timezone
-    # run.setup_mqtt() # Connect to MQTT Broker
 
     # check for dependencies and install if missing
     # pkg_verification = PackageInstaller()
