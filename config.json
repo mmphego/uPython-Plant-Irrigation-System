@@ -1,0 +1,13 @@
+{
+    "wifi_config": {
+        "ssid": "KATCPT",
+        "password": "katCPT#12"
+    },
+    "MQTT_config": {
+        "Host": "192.168.1.11"
+    },
+    "moisture_sensor_cal": {
+        "dry": 841,
+        "wet": 470
+    },
+}
