@@ -1,18 +1,21 @@
 # Writer interface over umqtt API.
+from machine import unique_id
+from ubinascii import hexlify
 from umqtt.simple import MQTTClient
+
+CLIENT_ID = hexlify(unique_id())
 
 
 class MQTTWriter:
-    __variables__ = ("host", "port", "client")
+    __variables__ = ("host", "client")
 
-    def __init__(self, client_id, host, port):
+    def __init__(self, host):
         self.host = host
-        self.port = port
-        self.client = MQTTClient(host, host, port)
+        self.client = MQTTClient(CLIENT_ID, host)
         self._connect()
 
     def _connect(self):
-        print("Connecting to %s:%s" % (self.host, self.port))
+        print("Connecting to %s" % (self.host))
         self.client.connect()
         print("Connection successful")
 
