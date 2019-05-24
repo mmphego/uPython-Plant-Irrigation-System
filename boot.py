@@ -3,11 +3,9 @@ import gc
 import os
 import esp
 import machine
-import ntptime
 import utime
 
-from mqtt_writer import MQTTWriter
-from utils import PackageInstaller, read_config
+from utils import PackageInstaller, read_config, set_tz
 from wifi import disable_wifi_ap, wifi_connect, wifi_disconnect
 
 gc.collect()
@@ -37,16 +35,12 @@ class InitialSetUp(object):
             wifi_disconnect()
             machine.reset()
 
-    def setup_mqtt(self):
-        self.client = MQTTWriter(self.config_dict["MQTT_config"]["Host"])
-
 
 if __name__ == "__main__":
     CONFIG = read_config("config.json")
-
     run = InitialSetUp(CONFIG)
     run.setup_wifi()  # Connect to WIFI
-    ntptime.settime()
+    set_tz()  # Set timezone
     # run.setup_mqtt() # Connect to MQTT Broker
 
     # check for dependencies and install if missing
