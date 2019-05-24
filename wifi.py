@@ -1,6 +1,5 @@
 import network
 import utime
-import ntptime
 
 
 def wifi_connect(essid, password):

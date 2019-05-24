@@ -1,6 +1,5 @@
 # This file is executed on every boot (including wake-boot from deepsleep)
 import gc
-import os
 import esp
 import machine
 import utime
@@ -41,7 +40,3 @@ if __name__ == "__main__":
     run = InitialSetUp(CONFIG)
     run.setup_wifi()  # Connect to WIFI
     set_tz()  # Set timezone
-
-    # check for dependencies and install if missing
-    # pkg_verification = PackageInstaller()
-    # pkg_verification.check_and_install()
