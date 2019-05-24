@@ -1,21 +1,19 @@
 import time
 import machine
-from boot import read_config
-from Logger import LoggingClass
 
+from utils import current_time, read_config
 
 __all__ = ["MoistureSensor"]
 
 
-class MoistureSensor(LoggingClass):
-    def __init__(self, adc_pin, config_dict, sleep=1):
+class MoistureSensor(object):
+    def __init__(self, adc_pin, config_dict, sleep=60):
         self.adc_pin = adc_pin
         self.sensor_cal = config_dict
         self.sleep = sleep
         self.setup_adc()
 
     def setup_adc(self):
-        # self.logger.info("Setting up ADC on pin %s", self.adc_pin)
         self.adc = machine.ADC(self.adc_pin)
 
     @property
@@ -57,33 +55,18 @@ class MoistureSensor(LoggingClass):
 
         return (current_val - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow
 
-    def current_time(self):
-        hours = str(time.localtime()[3])
-        mins = str(time.localtime()[4])
-        secs = str(time.localtime()[5])
-        if int(secs) < 10:
-            secs = '0' + secs
-        if int(mins) < 10:
-            mins = '0' + mins
-        timestr = "%s:%s:%s" % (hours, mins, secs)
-        return timestr
-
     def run(self):
         try:
-            while True:
-                SoilMoistPerc = self.adc_map(
-                    self.read,
-                    self.sensor_cal["wet"],
-                    self.sensor_cal["dry"],
-                    0, 100
-                )
-                # self.logger.info("SoilMoist is at %s%", SoilMoistPerc)
-                print("ADC Value: %s \t %s" % (SoilMoistPerc,  self.current_time()))
-                time.sleep(sleep)
+            SoilMoistPerc = self.adc_map(
+                self.read, self.sensor_cal["wet"], self.sensor_cal["dry"], 0, 100
+            )
+            print("Soil Moisture Sensor: %s% \t %s" % (SoilMoistPerc, current_time()))
         except Exception:
             machine.reset()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     config = read_config("config.json")
-    moisture_Sensor = MoistureSensor(0, config)
+    pin_adc = 0
+    moisture_Sensor = MoistureSensor(pin_adc, config["moisture_sensor_cal"])
     moisture_Sensor.run()
