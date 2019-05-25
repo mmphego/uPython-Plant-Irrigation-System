@@ -2,19 +2,24 @@ import gc
 import machine
 import utime
 
-from utils import current_time, read_config
+from utils import current_time, read_config, enter_deep_sleep, force_garbage_collect
 
 __all__ = ["MoistureSensor"]
 
 
-def force_garbage_collect():
-    # Not so ideal but someone has to do it
-    gc.collect()
-    gc.mem_free()
-
 
 class MoistureSensor(object):
     def __init__(self, adc_pin, config_dict):
+        """
+        Sensor calibration
+        ######################
+        This was determined by placing the sensor in&out of water, and reading the ADC value
+        Note: That this values might be unique to individual sensors, ie your mileage may vary
+        dry air = 841 (0%) eq 0v ~ 0
+        water = 470 (100%) eq 3.3v ~ 1023
+        Expects a dict:
+            config_dict = {"moisture_sensor_cal": {"dry": 841, "wet": 470}
+        """
         self.adc_pin = adc_pin
         self.sensor_cal = config_dict
         self.setup_adc
@@ -75,12 +80,14 @@ class MoistureSensor(object):
             SoilMoistPerc = self.adc_map(
                 sampled_adc, self.sensor_cal["wet"], self.sensor_cal["dry"], 0, 100)
             print("Soil Moisture Sensor: %.2f%% \t %s" % (SoilMoistPerc, current_time()))
+            force_garbage_collect()
         except Exception as exc:
             print("Exception: %s", exc)
 
 
 if __name__ == "__main__":
+
     config = read_config("config.json")
     moisture_Sensor = MoistureSensor(0, config["moisture_sensor_cal"])
     moisture_Sensor.run()
-    force_garbage_collect()
+    enter_deep_sleep(60)
