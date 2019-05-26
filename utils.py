@@ -2,33 +2,80 @@ import esp
 import gc
 import json
 import machine
+import network
 import ntptime
 import urequests
 import utime
+import usocket
 
-from wifi import disable_wifi_ap, wifi_connect, wifi_disconnect
+from ubinascii import hexlify
+from umqtt.simple import MQTTClient
 
 
-class InitialSetUp(object):
+class WiFi:
+    """
+    Connect to the WiFi.
+    Based on the example in the micropython documentation.
+    """
+
+    def __init__(self, essid, password):
+        self.essid = essid
+        self.password = password
+
+    def wifi_connect(self):
+        wlan = network.WLAN(network.STA_IF)
+        wlan.active(True)
+        if not wlan.isconnected():
+            print("connecting to network '%s'..." % self.essid)
+            wlan.connect(self.essid, self.password)
+            # connect() appears to be async - waiting for it to complete
+            while not wlan.isconnected():
+                print("waiting for connection...")
+                utime.sleep(5)
+            print("WiFi connect successful, network config: %s" % repr(wlan.ifconfig()))
+        else:
+            # Note that connection info is stored in non-volatile memory. If
+            # you are connected to the wrong network, do an explicity disconnect()
+            # and then reconnect.
+            print("WiFi already connected, network config: %s" % repr(wlan.ifconfig()))
+
+    def wifi_disconnect(self):
+        # Disconnect from the current network. You may have to
+        # do this explicitly if you switch networks, as the params are stored
+        # in non-volatile memory.
+        wlan = network.WLAN(network.STA_IF)
+        if wlan.isconnected():
+            print("Disconnecting...")
+            wlan.disconnect()
+        else:
+            print("Wifi not connected.")
+
+    def disable_wifi_ap(self):
+        # Disable the built-in access point.
+        wlan = network.WLAN(network.AP_IF)
+        wlan.active(False)
+        print("Disabled access point, network status is %s" % wlan.status())
+
+
+class InitialSetUp:
     def __init__(self, config_dict, utc_shift=2):
-        self.config_dict = config_dict
         self.utc_shift = utc_shift
+        self.setup_wifi = WiFi(
+            config_dict["wifi_config"]["ssid"], config_dict["wifi_config"]["password"]
+        )
 
-    def setup_wifi(self, disableAP=False):
+    def wifi_config(self, disableAP=False):
         if disableAP:
-            disable_wifi_ap()
+            self.setup_wifi.disable_wifi_ap()
 
         try:
             print("## Connecting to WiFi")
-            wifi_connect(
-                self.config_dict["wifi_config"]["ssid"],
-                self.config_dict["wifi_config"]["password"],
-            )
+            self.setup_wifi.wifi_connect()
             print("## Connected to WiFi")
         except Exception:
             print("## Failed to connect to WiFi")
             utime.sleep(5)
-            wifi_disconnect()
+            self.setup_wifi.wifi_disconnect()
             machine.reset()
 
     def set_tz(self):
@@ -40,7 +87,7 @@ class InitialSetUp(object):
         rtc.datetime(tm)
 
 
-class Slack(object):
+class Slack:
     def __init__(self, app_id, secret_id, token):
         """
         Get an "incoming-webhook" URL from your slack account.
@@ -59,6 +106,49 @@ class Slack(object):
         data = '{"text":"%s"}' % msg
         resp = urequests.post(self._url, data=data, headers=headers)
         return "Message Sent" if resp.status_code == 200 else "Failed to sent message"
+
+
+class MQTTWriter:
+    """Writer interface over umqtt API."""
+
+    __variables__ = ("host", "client")
+    __flag = False
+
+    def __init__(self, host):
+        self.host = host
+        if self.host:
+            self.client = MQTTClient(hexlify(machine.unique_id()), self.host)
+            self.check_ip_up()
+            self._connect()
+
+    def check_ip_up(self):
+        try:
+            s = usocket.socket(usocket.AF_INET, usocket.SOCK_STREAM)
+            s.settimeout(1)
+            s.connect((self.host, 1883))
+            print(self.host + " is UP!")
+            self.__flag = True
+        except Exception:
+            print(self.host + "is DOWN!")
+            utime.sleep(1)
+        finally:
+            s.close()
+
+    def _connect(self):
+        print("Connecting to %s" % (self.host))
+        if self.__flag:
+            self.client.connect()
+            print("Connection successful")
+        else:
+            print("Cannot connect to host:%s" % self.host)
+
+    def publish(self, topic="", msg="", encoder="utf-8"):
+        print("Publishing message: %s on topic: %s" % (msg, topic))
+        if self.__flag:
+            self.client.publish(bytes(topic, encoder), bytes(msg, encoder))
+            print("Published Successfully!")
+        else:
+            print("Failed to Publish the message, Link is not UP!")
 
 
 def force_garbage_collect():
@@ -95,4 +185,3 @@ def enter_deep_sleep(secs):
     rtc.alarm(rtc.ALARM0, secs)
     # put the device to sleep
     machine.deepsleep()
-
