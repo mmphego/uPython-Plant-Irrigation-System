@@ -59,6 +59,7 @@ upload:
 		echo installing $$f; \
 		$(MPFSHELL) -nc rm $$f > /dev/null 2>&1; \
 		$(MPFSHELL) -nc put $$f; \
+		echo done installing; \
 	done
 
 check:

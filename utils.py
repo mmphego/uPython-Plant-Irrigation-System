@@ -3,6 +3,7 @@ import gc
 import json
 import machine
 import ntptime
+import urequests
 import utime
 
 from wifi import disable_wifi_ap, wifi_connect, wifi_disconnect
@@ -73,3 +74,24 @@ def enter_deep_sleep(secs):
     rtc.alarm(rtc.ALARM0, secs)
     # put the device to sleep
     machine.deepsleep()
+
+
+class Slack(object):
+    def __init__(self, app_id, secret_id, token):
+        """
+        Get an "incoming-webhook" URL from your slack account.
+        @see https://api.slack.com/incoming-webhooks
+        eg: https://hooks.slack.com/services/<app_id>/<secret_id>/<token>
+        """
+        self._url = "https://hooks.slack.com/services/%s/%s/%s" % (
+            app_id,
+            secret_id,
+            token,
+        )
+
+    def slack_it(self, msg):
+        """ Send a message to a predefined slack channel."""
+        headers = {"content-type": "application/json"}
+        data = '{"text":"%s"}' % msg
+        resp = urequests.post(self._url, data=data, headers=headers)
+        return "Message Sent" if resp.status_code == 200 else "Failed to sent message"

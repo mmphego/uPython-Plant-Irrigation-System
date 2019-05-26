@@ -2,10 +2,15 @@ import gc
 import machine
 import utime
 
-from utils import current_time, read_config, enter_deep_sleep, force_garbage_collect
+from utils import (
+    current_time,
+    enter_deep_sleep,
+    force_garbage_collect,
+    read_config,
+    Slack,
+)
 
 __all__ = ["MoistureSensor"]
-
 
 
 class MoistureSensor(object):
@@ -21,15 +26,27 @@ class MoistureSensor(object):
             config_dict = {"moisture_sensor_cal": {"dry": 841, "wet": 470}
         """
         self.adc_pin = adc_pin
-        self.sensor_cal = config_dict
+        self.config = config_dict
         self.setup_adc
+        self._slack = None
 
     @property
     def setup_adc(self):
         self.adc = machine.ADC(self.adc_pin)
 
+    @property
+    def slack(self):
+        """Slack message init"""
+        self._slack = Slack(
+            self.config["slack_auth"]["app_id"],
+            self.config["slack_auth"]["secret_id"],
+            self.config["slack_auth"]["token"],
+        )
+        return self._slack.slack_it
+
     def average(self, samples):
-        return sum(samples, 0.0) / len(samples)
+        ave = sum(samples, 0.0) / len(samples)
+        return ave if ave > 0 else 0
 
     def read_samples(self, n_samples=10, rate=0.5):
         sampled_adc = []
@@ -78,8 +95,15 @@ class MoistureSensor(object):
             samples = self.read_samples()
             sampled_adc = self.average(samples)
             SoilMoistPerc = self.adc_map(
-                sampled_adc, self.sensor_cal["wet"], self.sensor_cal["dry"], 0, 100)
-            print("Soil Moisture Sensor: %.2f%% \t %s" % (SoilMoistPerc, current_time()))
+                sampled_adc,
+                self.config["moisture_sensor_cal"]["wet"],
+                self.config["moisture_sensor_cal"]["dry"],
+                0,
+                100,
+            )
+            msg = "Soil Moisture Sensor: %.2f%% \t %s" % (SoilMoistPerc, current_time())
+            print(msg)
+            self.slack(msg)
             force_garbage_collect()
         except Exception as exc:
             print("Exception: %s", exc)
@@ -88,6 +112,6 @@ class MoistureSensor(object):
 if __name__ == "__main__":
 
     config = read_config("config.json")
-    moisture_Sensor = MoistureSensor(0, config["moisture_sensor_cal"])
+    moisture_Sensor = MoistureSensor(0, config)
     moisture_Sensor.run()
-    enter_deep_sleep(60)
+    # enter_deep_sleep(60)
