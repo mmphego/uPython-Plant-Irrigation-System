@@ -10,4 +10,9 @@
         "dry": 841,
         "wet": 470
     },
+    "slack_auth": {
+        "app_id":"",
+        "secret_id": "",
+        "token":""
+    }
 }

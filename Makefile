@@ -33,9 +33,8 @@ FIRMWAREVERSION=esp8266-20190125-v1.10.bin
 FILES=boot.py \
 	config.json \
 	main.py \
-	mqtt_writer.py \
-	utils.py \
-	wifi.py
+	soil_moisture.py \
+	utils.py
 
 erase:
 	$(ESPTOOL) --port /dev/$(PORT) erase_flash
