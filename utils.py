@@ -40,6 +40,27 @@ class InitialSetUp(object):
         rtc.datetime(tm)
 
 
+class Slack(object):
+    def __init__(self, app_id, secret_id, token):
+        """
+        Get an "incoming-webhook" URL from your slack account.
+        @see https://api.slack.com/incoming-webhooks
+        eg: https://hooks.slack.com/services/<app_id>/<secret_id>/<token>
+        """
+        self._url = "https://hooks.slack.com/services/%s/%s/%s" % (
+            app_id,
+            secret_id,
+            token,
+        )
+
+    def slack_it(self, msg):
+        """ Send a message to a predefined slack channel."""
+        headers = {"content-type": "application/json"}
+        data = '{"text":"%s"}' % msg
+        resp = urequests.post(self._url, data=data, headers=headers)
+        return "Message Sent" if resp.status_code == 200 else "Failed to sent message"
+
+
 def force_garbage_collect():
     # Not so ideal but someone has to do it
     gc.collect()
@@ -75,23 +96,3 @@ def enter_deep_sleep(secs):
     # put the device to sleep
     machine.deepsleep()
 
-
-class Slack(object):
-    def __init__(self, app_id, secret_id, token):
-        """
-        Get an "incoming-webhook" URL from your slack account.
-        @see https://api.slack.com/incoming-webhooks
-        eg: https://hooks.slack.com/services/<app_id>/<secret_id>/<token>
-        """
-        self._url = "https://hooks.slack.com/services/%s/%s/%s" % (
-            app_id,
-            secret_id,
-            token,
-        )
-
-    def slack_it(self, msg):
-        """ Send a message to a predefined slack channel."""
-        headers = {"content-type": "application/json"}
-        data = '{"text":"%s"}' % msg
-        resp = urequests.post(self._url, data=data, headers=headers)
-        return "Message Sent" if resp.status_code == 200 else "Failed to sent message"
