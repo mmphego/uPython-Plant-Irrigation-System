@@ -5,14 +5,14 @@
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
-	@echo "   erase "
-	@echo "   flash "
-	@echo "   reset "
-	@echo "   firmware "
-	@echo "   upload "
-	@echo "   check "
-	@echo "   repl "
-	@echo "   bootstrap ""
+	@echo "   erase : Eraze flash on chip"
+	@echo "   flash : Upload new firmware to chip"
+	@echo "   reset : Hard reset chip"
+	@echo "   firmware: Download latest firmware from http://www.micropython.org/download#esp8266"
+	@echo "   upload: Upload latest firmware"
+	@echo "   check: Compile Python code "
+	@echo "   repl: Open repl on chip"
+	@echo "   bootstrap: eraze, flash, and upload"
 
 # Serial port
 # Linux Debian/Ubuntu
@@ -24,6 +24,7 @@ SPEED=460800
 MPFSHELL=mpfshell --open $(PORT)
 ESPTOOL=esptool.py
 FIRMWARE=./firmware.bin
+# Get latest version from http://www.micropython.org/download#esp8266
 FIRMWAREVERSION=esp8266-20190125-v1.10.bin
 
 ######################################################################
@@ -37,11 +38,12 @@ FILES=boot.py \
 	wifi.py
 
 erase:
-	$(ESPTOOL) --port $(PORT) erase_flash
+	$(ESPTOOL) --port /dev/$(PORT) erase_flash
+	@sleep 3
 
 flash: firmware
-	$(ESPTOOL) --port /dev/$(PORT) --baud $(SPEED) write_flash --verify --flash_size=detect 0 $(FIRMWARE)
-	@sleep 5
+	$(ESPTOOL) --port /dev/$(PORT) --baud $(SPEED) write_flash --flash_size=detect 0 $(FIRMWARE)
+	@sleep 10
 	@echo 'Power cycle the device'
 
 reset:
@@ -55,6 +57,7 @@ upload:
 	for f in $(FILES); \
 	do \
 		echo installing $$f; \
+		$(MPFSHELL) -nc rm $$f > /dev/null 2>&1; \
 		$(MPFSHELL) -nc put $$f; \
 	done
 
