@@ -175,13 +175,16 @@ def read_config(filename):
 
 
 def enter_deep_sleep(secs):
+    # For some weird reason, my Wemos D1 does not wake up from deepsleep
     """
     Ensure that pin RST & D0 are connected!
     """
     # configure RTC.ALARM0 to be able to wake the device
     rtc = machine.RTC()
     rtc.irq(trigger=rtc.ALARM0, wake=machine.DEEPSLEEP)
-    # set RTC.ALARM0 to fire after Xmilliseconds, waking the device
-    rtc.alarm(rtc.ALARM0, secs)
+    # set RTC.ALARM0 to fire after Xseconds, waking the device
+    sleep_timeout = secs * 1000
+    rtc.alarm(rtc.ALARM0, sleep_timeout)
+    print('Sleep for %d sec' % sleep_timeout)
     # put the device to sleep
     machine.deepsleep()
