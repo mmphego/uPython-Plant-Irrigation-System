@@ -1,3 +1,4 @@
+
 # uPython-moisture-sensor
 
 **uPython based soil moisture sensor running on an esp8266**
@@ -16,18 +17,20 @@ These readings should be entered in [config.json](config.json) file.
 
 ## Setup NodeMCU & Tools
 
-Read the [docs.](https://docs.micropython.org/en/latest/esp8266/esp8266/tutorial/intro.html)
+Read the [docs](https://docs.micropython.org/en/latest/esp8266/esp8266/tutorial/intro.html)
 
+TL;DR
 *   Clone the repo and,
 *   Plug in the device to your computer
+
     **NOTE:** The installation assumes that the port name of device is `/dev/ttyUSB0` else, modify `Makefile` with port name [Hint:`$ ls /dev/tty.*`].
 *   Run `make bootstrap`
     This will install `esptool` and `mpfshell` for communicating with ESP chips and for serial connection with MicroPython boards, Eraze and flash the chip with firmware `esp8266-20190125-v1.10.bin` as well as upload the required files to the ESP.
 
 ## Setup Slack
 
-I have made a post on how to create a [Slack](slack.com) API for posting data, go [here](http://bit.ly/2K46XP8)
-The config goes [here](config.json)
+I have made a post on how to create a [Slack](slack.com) API for posting data, Find it [here](http://bit.ly/2K46XP8)
+The config goes [here.](config.json)
 
 ## Oh, Thanks!
 
