@@ -20,7 +20,13 @@ class MoistureSensor(object):
         self.config = config_dict
         self.setup_adc
         self._slack = None
-        self._mqtt = None
+        # self._mqtt = None
+        self._timer = None
+
+    @property
+    def timer(self):
+        self._timer = machine.Timer(-1)
+        return self._timer
 
     @property
     def setup_adc(self):
@@ -36,11 +42,11 @@ class MoistureSensor(object):
         )
         return self._slack.slack_it
 
-    @property
-    def mqtt(self):
-        host = self.config["MQTT_config"]["Host"]
-        self._mqtt = MQTTWriter(host)
-        return self._mqtt
+    # @property
+    # def mqtt(self):
+    #     host = self.config["MQTT_config"]["Host"]
+    #     self._mqtt = MQTTWriter(host)
+    #     return self._mqtt
 
     def average(self, samples):
         ave = sum(samples, 0.0) / len(samples)
@@ -88,7 +94,7 @@ class MoistureSensor(object):
 
         return (current_val - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow
 
-    def run(self):
+    def soil_sensor_check(self):
         try:
             samples = self.read_samples()
             sampled_adc = self.average(samples)
@@ -105,3 +111,15 @@ class MoistureSensor(object):
             force_garbage_collect()
         except Exception as exc:
             print("Exception: %s", exc)
+
+    def run_timer(self, secs=60):
+        self.timer.init(
+            period=secs*1000,
+            mode=machine.Timer.PERIODIC,
+            callback=lambda t: self.soil_sensor_check()
+        )
+        print("Timer Initialised, callback will be ran every %s seconds!!!" % secs)
+
+    def stop_timer(self):
+        self.timer.deinit()
+        print("Timer stopped!!!")

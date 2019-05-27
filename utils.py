@@ -117,7 +117,10 @@ class MQTTWriter:
     def __init__(self, host):
         self.host = host
         if self.host:
-            self.client = MQTTClient(hexlify(machine.unique_id()), self.host)
+            self.client = MQTTClient(
+                client_id=hexlify(machine.unique_id()),
+                server=self.host
+            )
             self.check_ip_up()
             self._connect()
 
