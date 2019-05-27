@@ -1,7 +1,7 @@
 ######################################################################
 # User configuration
 ######################################################################
-.PHONY: erase flash reset firmware upload check repl bootstrap
+.PHONY: erase flash reset firmware upload_all check repl bootstrap
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -52,9 +52,8 @@ firmware:
 	@bash -c "[ -f $(FIRMWARE) ] || wget -O ./firmware.bin http://micropython.org/resources/firmware/"$(FIRMWAREVERSION)
 
 # Upload all
-upload:
-	for f in $(FILES); \
-	do \
+upload_all:
+	for f in $(FILES); do \
 		echo installing $$f; \
 		$(MPFSHELL) -nc rm $$f > /dev/null 2>&1; \
 		$(MPFSHELL) -nc put $$f; \
