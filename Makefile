@@ -48,6 +48,10 @@ flash: firmware
 reset:
 	$(MPFSHELL) --reset
 
+install:
+	@bash -c "if ! command -v esptool.py >/dev/null 2>&1; then pip install --user -U esptool;fi"
+	@bash -c "if ! command -v mpfshell >/dev/null 2>&1; then pip install --user -U mpfshell;fi"
+
 firmware:
 	@bash -c "[ -f $(FIRMWARE) ] || wget -O ./firmware.bin http://micropython.org/resources/firmware/"$(FIRMWAREVERSION)
 
@@ -68,4 +72,4 @@ check:
 repl:
 	$(MPFSHELL) -c repl
 
-bootstrap: erase flash check upload
+bootstrap: install erase flash check upload_all
