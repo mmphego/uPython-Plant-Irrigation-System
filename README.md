@@ -4,7 +4,7 @@
 
 This is a simple [uPython](http://www.micropython.org/) project for a soil moisture sensor connected to a [Wemos D1 esp8266](https://www.wemos.cc/) board that will send a [Slack](slack.com) message to a specific channel every hour with the current moisture level. It uses a Capacitive soil moisture sensor as compared to the resistor soil moisture sensor - for obvious reasons.
 
-![image](asserts/soilmoisture.jpg)
+![image](assets/soilmoisture.jpg)
 
 ## Calibrating the Soil Moisture Sensor
 
