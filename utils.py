@@ -170,7 +170,6 @@ def current_time():
 
 
 def read_config(filename):
-
     with open(filename) as _f:
         config = json.load(_f)
     assert isinstance(config, dict)

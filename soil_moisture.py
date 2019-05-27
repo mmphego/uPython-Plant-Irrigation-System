@@ -4,6 +4,9 @@ import utime
 from utils import current_time, force_garbage_collect, MQTTWriter, Slack
 
 
+timer_interrupt = machine.Timer(-1)
+
+
 class MoistureSensor(object):
     def __init__(self, adc_pin, config_dict):
         """
@@ -21,12 +24,6 @@ class MoistureSensor(object):
         self.setup_adc
         self._slack = None
         # self._mqtt = None
-        self._timer = None
-
-    @property
-    def timer(self):
-        self._timer = machine.Timer(-1)
-        return self._timer
 
     @property
     def setup_adc(self):
@@ -113,7 +110,7 @@ class MoistureSensor(object):
             print("Exception: %s", exc)
 
     def run_timer(self, secs=60):
-        self.timer.init(
+        timer_interrupt.init(
             period=secs*1000,
             mode=machine.Timer.PERIODIC,
             callback=lambda t: self.soil_sensor_check()
@@ -121,5 +118,5 @@ class MoistureSensor(object):
         print("Timer Initialised, callback will be ran every %s seconds!!!" % secs)
 
     def stop_timer(self):
-        self.timer.deinit()
+        timer_interrupt.deinit()
         print("Timer stopped!!!")
