@@ -3,13 +3,16 @@
 
 **uPython based soil moisture sensor running on an esp8266**
 
-This is a simple [uPython](http://www.micropython.org/) project for a soil moisture sensor connected to a [Wemos D1 esp8266](https://www.wemos.cc/) board that will send a [Slack](slack.com) message to a specific channel every hour with the current moisture level. It uses a Capacitive soil moisture sensor as compared to the resistor soil moisture sensor - for obvious reasons.
+## Story
 
+Indoor plants can add new life to a space, increase oxygen in a space which can lead to more productivity and are an inspiration to all, but because of the work that is often required they are replaced with fake plastic plants which are not only unnatural and get thrown in landfills at some point of their life, but they do not offer as many of the benefits that real plants do. Plants are often viewed by younger generation similar to getting a pet because of the responsibilities that come with them, and although plants may make the best roomies they are often forgotten. This is a simple [uPython](http://www.micropython.org/) project for a soil moisture sensor connected to a [Wemos D1 esp8266](https://www.wemos.cc/) board that will send a [Slack](slack.com) message to a specific channel every hour if the flower needs watering. This will save the lives of plants and allow me to focus on other boring stuffs.
+
+## Circuit Diagram
 ![image](assets/soilmoisture.jpg)
 
 ## Calibrating the Soil Moisture Sensor
 
-Calibrating the sensor has two parts, the goal is to make sure sensor is functioning properly:
+Calibrating the sensor has two parts, the goal is to make sure sensor functions properly:
 *   Connect up the soil moisture sensor and dip it in a bowl of water and take the reading.
 *   Wipe the sensor, and place it on dry surface and take the reading
 
