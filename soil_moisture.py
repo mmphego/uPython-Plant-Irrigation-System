@@ -103,8 +103,9 @@ class MoistureSensor(object):
                 100,
             )
             msg = "Soil Moisture Sensor: %.2f%% \t %s" % (SoilMoistPerc, current_time())
+            if SoilMoistPerc <= self.config["moisture_sensor_cal"].get("Threshold", 15):
+                self.slack(msg)
             print(msg)
-            self.slack(msg)
             force_garbage_collect()
         except Exception as exc:
             print("Exception: %s", exc)
