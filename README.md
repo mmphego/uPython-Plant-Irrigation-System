@@ -33,6 +33,8 @@ TL;DR
 I have made a post on how to create a [Slack](slack.com) API for posting data, Find it [here](http://bit.ly/2K46XP8)
 The config goes [here.](config.json)
 
+![image](assets/slack.png)
+
 ## Oh, Thanks!
 
 By the way... thank you! And if you'd like to [say thanks](https://saythanks.io/to/mmphego)... :)
