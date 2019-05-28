@@ -8,7 +8,8 @@
     },
     "moisture_sensor_cal": {
         "dry": 841,
-        "wet": 470
+        "wet": 470,
+        "Threshold": 15,
     },
     "slack_auth": {
         "app_id":"",
