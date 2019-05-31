@@ -4,9 +4,6 @@ import utime
 from utils import current_time, force_garbage_collect, MQTTWriter, Slack
 
 
-timer_interrupt = machine.Timer(-1)
-
-
 class MoistureSensor(object):
     def __init__(self, adc_pin, config_dict):
         """
@@ -102,22 +99,16 @@ class MoistureSensor(object):
                 0,
                 100,
             )
-            msg = "Soil Moisture Sensor: %.2f%% \t %s" % (SoilMoistPerc, current_time())
             if SoilMoistPerc <= self.config["moisture_sensor_cal"].get("Threshold", 15):
+                msg = "Soil Moisture Sensor: %.2f%% \t %s" % (SoilMoistPerc, current_time())
                 self.slack(msg)
-            print(msg)
+                print(msg)
             force_garbage_collect()
         except Exception as exc:
             print("Exception: %s", exc)
 
     def run_timer(self, secs=60):
-        timer_interrupt.init(
-            period=secs*1000,
-            mode=machine.Timer.PERIODIC,
-            callback=lambda t: self.soil_sensor_check()
-        )
+        while True:
+            self.soil_sensor_check()
+            utime.sleep(secs)
         print("Timer Initialised, callback will be ran every %s seconds!!!" % secs)
-
-    def stop_timer(self):
-        timer_interrupt.deinit()
-        print("Timer stopped!!!")
