@@ -94,8 +94,8 @@ class MoistureSensor(object):
             sampled_adc = self.average(samples)
             SoilMoistPerc = self.adc_map(
                 sampled_adc,
-                self.config["moisture_sensor_cal"]["wet"],
                 self.config["moisture_sensor_cal"]["dry"],
+                self.config["moisture_sensor_cal"]["wet"],
                 0,
                 100,
             )
