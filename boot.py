@@ -1,6 +1,6 @@
 # This file is executed on every boot (including wake-boot from deepsleep)
 import esp
-from utils import read_config, InitialSetUp
+from utils import InitialSetUp, read_config
 
 if __name__ == "__main__":
     esp.osdebug(None)

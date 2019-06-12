@@ -1,7 +1,8 @@
-from utils import read_config
 from soil_moisture import MoistureSensor
+from utils import read_config
 
 if __name__ == "__main__":
-    config = read_config("config.json")
+    filename = "config.json"
+    config = read_config(filename)
     moisture_Sensor = MoistureSensor(0, config)
     moisture_Sensor.run_timer(900)

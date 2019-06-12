@@ -1,12 +1,14 @@
-import esp
 import gc
 import json
+
+import esp
 import machine
 import network
+import json
 import ntptime
 import urequests
-import utime
 import usocket
+import utime
 
 from ubinascii import hexlify
 from umqtt.simple import MQTTClient
@@ -118,8 +120,7 @@ class MQTTWriter:
         self.host = host
         if self.host:
             self.client = MQTTClient(
-                client_id=hexlify(machine.unique_id()),
-                server=self.host
+                client_id=hexlify(machine.unique_id()), server=self.host
             )
             self.check_ip_up()
             self._connect()
@@ -152,6 +153,36 @@ class MQTTWriter:
             print("Published Successfully!")
         else:
             print("Failed to Publish the message, Link is not UP!")
+
+
+class Ubidots:
+    def __init__(self, TOKEN, device_label):
+        self.url = "https://things.ubidots.com/api/v1.6/devices/{}?token={}".format(
+            device_label, TOKEN
+        )
+
+    def post_request(self, payload):
+        """Creates the headers for the HTTP requests and Makes the HTTP requests"""
+        assert isinstance(payload, dict)
+
+        status = 400
+        attempts = 0
+        while status >= 400 and attempts <= 5:
+            req = urequests.post(url=self.url, json=payload)
+            status = req.status_code
+            attempts += 1
+            utime.sleep(1)
+
+        # Processes results
+        if status == 200:
+            print("[INFO] request made properly, your device is updated.")
+            return True
+        else:
+            print(
+                "[ERROR] Could not send data after 5 attempts, please check "
+                "your token credentials and internet connection."
+            )
+            return False
 
 
 def force_garbage_collect():
@@ -187,6 +218,6 @@ def enter_deep_sleep(secs):
     # set RTC.ALARM0 to fire after Xseconds, waking the device
     sleep_timeout = secs * 1000
     rtc.alarm(rtc.ALARM0, sleep_timeout)
-    print('Sleep for %d sec' % sleep_timeout)
+    print("Sleep for %d sec" % sleep_timeout)
     # put the device to sleep
     machine.deepsleep()

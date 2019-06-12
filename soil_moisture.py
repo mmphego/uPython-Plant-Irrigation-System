@@ -1,7 +1,7 @@
 import machine
 import utime
 
-from utils import current_time, force_garbage_collect, MQTTWriter, Slack
+from utils import MQTTWriter, Slack, Ubidots, current_time, force_garbage_collect
 
 
 class MoistureSensor(object):
@@ -20,6 +20,9 @@ class MoistureSensor(object):
         self.config = config_dict
         self.setup_adc
         self._slack = None
+        self.ubidots = Ubidots(
+            self.config["ubidots"]["token"], self.config["ubidots"]["device"]
+        )
         # self._mqtt = None
 
     @property
@@ -29,11 +32,8 @@ class MoistureSensor(object):
     @property
     def slack(self):
         """Slack message init"""
-        self._slack = Slack(
-            self.config["slack_auth"]["app_id"],
-            self.config["slack_auth"]["secret_id"],
-            self.config["slack_auth"]["token"],
-        )
+        config = self.config["slack_auth"]
+        self._slack = Slack(config["app_id"], config["secret_id"], config["token"])
         return self._slack.slack_it
 
     # @property
@@ -99,8 +99,12 @@ class MoistureSensor(object):
                 0,
                 100,
             )
+            self.ubidots.post_request({"soil_moisture": SoilMoistPerc})
             if SoilMoistPerc <= self.config["moisture_sensor_cal"].get("Threshold", 15):
-                msg = "Soil Moisture Sensor: %.2f%% \t %s" % (SoilMoistPerc, current_time())
+                msg = "Soil Moisture Sensor: %.2f%% \t %s" % (
+                    SoilMoistPerc,
+                    current_time(),
+                )
                 self.slack(msg)
                 print(msg)
             force_garbage_collect()
