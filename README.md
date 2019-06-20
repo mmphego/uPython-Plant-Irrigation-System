@@ -45,8 +45,7 @@ Who doesn't love graphs, added [Ubidots](https://ubidots.com/) support for Viz
 
 **Real-time soil moisture tracking.**
 
-<iframe width="430" height="280" frameborder="0" src="https://app.ubidots.com/ubi/getchart/iSXwf49XkTiylIv6vnmx94SLAOw"></iframe>
-
+https://app.ubidots.com/ubi/getchart/page/iSXwf49XkTiylIv6vnmx94SLAOw
 ## Oh, Thanks!
 
 By the way... thank you! And if you'd like to [say thanks](https://saythanks.io/to/mmphego)... :)
