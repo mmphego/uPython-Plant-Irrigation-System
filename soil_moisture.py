@@ -107,6 +107,10 @@ class MoistureSensor(object):
                 )
                 self.slack(msg)
                 print(msg)
+            elif SoilMoistPerc <= 50:
+                msg = "Soil Moisture is at 50% You should probably Water the plant."
+                self.slack(msg)
+                print(msg)
             force_garbage_collect()
         except Exception as exc:
             print("Exception: %s", exc)
