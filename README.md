@@ -43,6 +43,9 @@ The config goes [here.](config.json)
 Who doesn't love graphs, added [Ubidots](https://ubidots.com/) support for Viz
 ![image](assets/ubidots.png)
 
+**Real-time soil moisture tracking.**
+
+https://app.ubidots.com/ubi/getchart/page/iSXwf49XkTiylIv6vnmx94SLAOw
 ## Oh, Thanks!
 
 By the way... thank you! And if you'd like to [say thanks](https://saythanks.io/to/mmphego)... :)
