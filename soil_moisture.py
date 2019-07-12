@@ -107,7 +107,7 @@ class MoistureSensor(object):
                 )
                 self.slack(msg)
                 print(msg)
-            elif SoilMoistPerc <= 50:
+            elif SoilMoistPerc <= 70:
                 msg = "Soil Moisture is at 50% You should probably Water the plant."
                 self.slack(msg)
                 print(msg)
