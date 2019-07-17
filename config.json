@@ -1,15 +1,19 @@
 {
+    "Pin_Config":{
+        "ADC_Pin": 0,
+        "Water_Pump_Pin": 13
+    },
     "wifi_config": {
         "ssid": "KATCPT",
         "password": "katCPT#12"
     },
     "MQTT_config": {
-        "Host": "192.168.1.11"
+        "Host": null,
     },
     "moisture_sensor_cal": {
         "dry": 841,
         "wet": 470,
-        "Threshold": 15,
+        "Threshold": 70,
     },
     "slack_auth": {
         "app_id":"",
