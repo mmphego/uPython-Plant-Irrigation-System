@@ -221,3 +221,41 @@ def enter_deep_sleep(secs):
     print("Sleep for %d sec" % sleep_timeout)
     # put the device to sleep
     machine.deepsleep()
+
+def adc_map(current_val, from_Low, from_High, to_Low=0, to_High=100):
+    """
+    Re-maps a number from one range to another.
+    That is, a value of 'from_Low' would get mapped to 'to_Low',
+    a value of 'from_High' to 'to_High', values in-between to values in-between, etc.
+
+    Does not constrain values to within the range, because out-of-range values are
+    sometimes intended and useful.
+
+    y = adc_map(x, 1, 50, 50, 1);
+
+    The function also handles negative numbers well, so that this example
+
+    y = adc_map(x, 1, 50, 50, -100);
+
+    is also valid and works well.
+
+    The adc_map() function uses integer math so will not generate fractions,
+    when the math might indicate that it should do so.
+    Fractional remainders are truncated, and are not rounded or averaged.
+
+    Parameters
+    ----------
+    value: the number to map.
+    from_Low: the lower bound of the value’s current range.
+    from_High: the upper bound of the value’s current range.
+    to_Low: the lower bound of the value’s target range.
+    to_High: the upper bound of the value’s target range.
+
+    Adapted from https://www.arduino.cc/reference/en/language/functions/math/map/
+    """
+
+    return (current_val - from_Low) * (to_High - to_Low) / (from_High - from_Low) + to_Low
+
+def average(samples):
+    ave = sum(samples, 0.0) / len(samples)
+    return ave if ave > 0 else 0
