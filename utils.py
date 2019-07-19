@@ -4,12 +4,10 @@ import json
 import esp
 import machine
 import network
-import json
 import ntptime
 import urequests
 import usocket
 import utime
-
 from ubinascii import hexlify
 from umqtt.simple import MQTTClient
 
@@ -32,14 +30,20 @@ class WiFi:
             wlan.connect(self.essid, self.password)
             # connect() appears to be async - waiting for it to complete
             while not wlan.isconnected():
-                print("waiting for connection...")
+                print("[DEBUG] Waiting for connection...")
                 utime.sleep(5)
-            print("WiFi connect successful, network config: %s" % repr(wlan.ifconfig()))
+            print(
+                "[INFO] WiFi connect successful, network config: %s"
+                % repr(wlan.ifconfig())
+            )
         else:
             # Note that connection info is stored in non-volatile memory. If
             # you are connected to the wrong network, do an explicity disconnect()
             # and then reconnect.
-            print("WiFi already connected, network config: %s" % repr(wlan.ifconfig()))
+            print(
+                "[INFO] WiFi already connected, network config: %s"
+                % repr(wlan.ifconfig())
+            )
 
     def wifi_disconnect(self):
         # Disconnect from the current network. You may have to
@@ -47,16 +51,16 @@ class WiFi:
         # in non-volatile memory.
         wlan = network.WLAN(network.STA_IF)
         if wlan.isconnected():
-            print("Disconnecting...")
+            print("[DEBUG] Disconnecting...")
             wlan.disconnect()
         else:
-            print("Wifi not connected.")
+            print("[ERROR] WiFi not connected.")
 
     def disable_wifi_ap(self):
         # Disable the built-in access point.
         wlan = network.WLAN(network.AP_IF)
         wlan.active(False)
-        print("Disabled access point, network status is %s" % wlan.status())
+        print("[INFO] Disabled access point, network status is %s" % wlan.status())
 
 
 class InitialSetUp:
@@ -71,11 +75,11 @@ class InitialSetUp:
             self.setup_wifi.disable_wifi_ap()
 
         try:
-            print("## Connecting to WiFi")
+            print("[INFO] Connecting to WiFi")
             self.setup_wifi.wifi_connect()
-            print("## Connected to WiFi")
+            print("[INFO] Connected to WiFi")
         except Exception:
-            print("## Failed to connect to WiFi")
+            print("[ERROR] Failed to connect to WiFi")
             utime.sleep(5)
             self.setup_wifi.wifi_disconnect()
             machine.reset()
@@ -130,29 +134,29 @@ class MQTTWriter:
             s = usocket.socket(usocket.AF_INET, usocket.SOCK_STREAM)
             s.settimeout(1)
             s.connect((self.host, 1883))
-            print(self.host + " is UP!")
+            print("[INFO] Host %s is UP!" % self.host)
             self.__flag = True
         except Exception:
-            print(self.host + "is DOWN!")
+            print("[ERROR] Host %s is DOWN!" % self.host)
             utime.sleep(1)
         finally:
             s.close()
 
     def _connect(self):
-        print("Connecting to %s" % (self.host))
+        print("[INFO] Connecting to %s" % (self.host))
         if self.__flag:
             self.client.connect()
-            print("Connection successful")
+            print("[INFO] Connection successful")
         else:
-            print("Cannot connect to host:%s" % self.host)
+            print("[ERROR] Cannot connect to host:%s" % self.host)
 
     def publish(self, topic="", msg="", encoder="utf-8"):
-        print("Publishing message: %s on topic: %s" % (msg, topic))
+        print("[INFO] Publishing message: %s on topic: %s" % (msg, topic))
         if self.__flag:
             self.client.publish(bytes(topic, encoder), bytes(msg, encoder))
-            print("Published Successfully!")
+            print("[INFO] Published Successfully!")
         else:
-            print("Failed to Publish the message, Link is not UP!")
+            print("[ERROR] Failed to Publish the message, Link is not UP!")
 
 
 class Ubidots:
@@ -163,6 +167,7 @@ class Ubidots:
 
     def post_request(self, payload):
         """Creates the headers for the HTTP requests and Makes the HTTP requests"""
+        print("[DEBUG] Uploading Payload: %s" % payload)
         assert isinstance(payload, dict)
 
         status = 400
@@ -172,10 +177,11 @@ class Ubidots:
             status = req.status_code
             attempts += 1
             utime.sleep(1)
+            print("[DEBUG] Sending data to Ubidots...")
 
         # Processes results
         if status == 200:
-            print("[INFO] request made properly, your device is updated.")
+            print("[INFO] Request made properly, Updated Ubidots with %s." % payload)
             return True
         else:
             print(
@@ -222,6 +228,7 @@ def enter_deep_sleep(secs):
     # put the device to sleep
     machine.deepsleep()
 
+
 def adc_map(current_val, from_Low, from_High, to_Low=0, to_High=100):
     """
     Re-maps a number from one range to another.
@@ -255,6 +262,7 @@ def adc_map(current_val, from_Low, from_High, to_Low=0, to_High=100):
     """
 
     return (current_val - from_Low) * (to_High - to_Low) / (from_High - from_Low) + to_Low
+
 
 def average(samples):
     ave = sum(samples, 0.0) / len(samples)

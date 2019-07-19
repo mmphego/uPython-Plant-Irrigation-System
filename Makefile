@@ -34,6 +34,7 @@ FILES=boot.py \
 	config.json \
 	main.py \
 	soil_moisture.py \
+	water_pump.py \
 	utils.py
 
 erase:

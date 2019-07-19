@@ -1,16 +1,14 @@
 import machine
 import utime
-
 from utils import (
+    MQTTWriter,
+    Slack,
+    Ubidots,
     adc_map,
     average,
     current_time,
     force_garbage_collect,
-    MQTTWriter,
-    Slack,
-    Ubidots,
 )
-
 from water_pump import WaterPump
 
 
@@ -44,13 +42,18 @@ class MoistureSensor(object):
 
     @property
     def water_pump(self):
-        if (self.config["Pin_Config"]["Water_Pump_Pin"]) and (not self._water_pump):
-            self._water_pump = WaterPump(self.config["Pin_Config"]["Water_Pump_Pin"])
+        if (isinstance(self.config["Pin_Config"]["Water_Pump_Pin"], int)) and (
+            not self._water_pump
+        ):
+            self._water_pump = WaterPump(
+                self.config["Pin_Config"]["Water_Pump_Pin"],
+                self.config["water_pump_time"]["delay_pump_on"],
+            )
         return self._water_pump
 
     @property
     def adc(self):
-        if (self.config["Pin_Config"]["ADC_Pin"]) and (not self._adc):
+        if (isinstance(self.config["Pin_Config"]["ADC_Pin"], int)) and (not self._adc):
             self._adc = machine.ADC(self.config["Pin_Config"]["ADC_Pin"])
         return self._adc
 
@@ -80,24 +83,33 @@ class MoistureSensor(object):
         return sampled_adc
 
     def message_send(self, msg):
-        self.slack(msg)
-        print(msg)
+        try:
+            print("[INFO] Sending message to SLACK")
+            self.slack(msg)
+            print("[INFO] Message sent...")
+        except Exception as exc:
+            print("[ERROR] Could not send SLACK message: %s" % str(exc))
+        finally:
+            print("[INFO] %s" % msg)
 
     def soil_sensor_check(self):
         try:
             samples = self.read_samples()
             sampled_adc = average(samples)
-            SoilMoistPerc = adc_map(
+            self._soilmoistperc = adc_map(
                 sampled_adc,
                 self.config["moisture_sensor_cal"]["dry"],
                 self.config["moisture_sensor_cal"]["wet"],
             )
-            self.ubidots.post_request({"soil_moisture": SoilMoistPerc})
-            if SoilMoistPerc <= self.config["moisture_sensor_cal"].get("Threshold", 50):
-                self.message_send(
-                    "Soil Moisture Sensor: %.2f%% \t %s" % (SoilMoistPerc, current_time())
-                )
+            self.ubidots.post_request({"soil_moisture": self._soilmoistperc})
+            if self._soilmoistperc <= self.config["moisture_sensor_cal"].get(
+                "Threshold", 50
+            ):
                 self._water_me = True
+                self.message_send(
+                    "[INFO] Soil Moisture Sensor: %.2f%% \t %s"
+                    % (self._soilmoistperc, current_time())
+                )
             else:
                 self._water_me = False
         except Exception as exc:
@@ -106,17 +118,26 @@ class MoistureSensor(object):
             force_garbage_collect()
 
     def run_timer(self, secs=60):
+        print("[INFO] Timer Initialised, callback will be ran every %s seconds!!!" % secs)
         while True:
             self.soil_sensor_check()
             while self._water_me:
                 self.message_send(
-                    "Automatically watering the plant(s): %s" % current_time()
+                    "Note: Automatically watering the plant(s):\t %s" % current_time()
                 )
                 if not self.water_pump.pump_status:
                     self.water_pump.pump_on()
+                    print(
+                        "[DEBUG] Setting Pump ON as water is @ %.2f%%"
+                        % self._soilmoistperc
+                    )
                 if self.water_pump.pump_status:
+                    print("[DEBUG] Checking Soil Moisture Status...")
                     self.soil_sensor_check()
+                    print("[DEBUG] Soil Moisture Percent @ %.2f%%" % self._soilmoistperc)
                 self.water_pump.pump_off()
+                print(
+                    "[DEBUG] Setting Pump OFF as water is @ %.2f%%" % self._soilmoistperc
+                )
 
             utime.sleep(secs)
-        print("Timer Initialised, callback will be ran every %s seconds!!!" % secs)
