@@ -15,9 +15,16 @@
         "wet": 470,
         "Threshold": 70,
     },
+    "water_pump_time": {
+        "": 2
+    },
     "slack_auth": {
-        "app_id":"",
+        "app_id": "",
         "secret_id": "",
-        "token":""
+        "token": ""
+    },
+    "ubidots":{
+        "token": "",
+        "device": ""
     }
 }
