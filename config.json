@@ -1,7 +1,7 @@
 {
     "Pin_Config":{
         "ADC_Pin": 0,
-        "Water_Pump_Pin": 13
+        "Water_Pump_Pin": 12
     },
     "wifi_config": {
         "ssid": "KATCPT",
@@ -13,10 +13,10 @@
     "moisture_sensor_cal": {
         "dry": 841,
         "wet": 470,
-        "Threshold": 70,
+        "Threshold": 80,
     },
     "water_pump_time": {
-        "": 2
+        "delay_pump_on": 3
     },
     "slack_auth": {
         "app_id": "",
@@ -25,6 +25,6 @@
     },
     "ubidots":{
         "token": "",
-        "device": ""
+        "device": "esp8266-soil-moisture"
     }
 }
