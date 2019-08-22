@@ -45,10 +45,8 @@ class MoistureSensor(object):
         if (isinstance(self.config["Pin_Config"]["Water_Pump_Pin"], int)) and (
             not self._water_pump
         ):
-            self._water_pump = WaterPump(
-                self.config["Pin_Config"]["Water_Pump_Pin"],
-                self.config["water_pump_time"]["delay_pump_on"],
-            )
+            print("[DEBUG] Setup water_pump.")
+            self._water_pump = WaterPump(self.config["Pin_Config"]["Water_Pump_Pin"])
         return self._water_pump
 
     @property
@@ -74,7 +72,7 @@ class MoistureSensor(object):
             self._mqtt = MQTTWriter(self.config["MQTT_config"]["Host"])
         return self._mqtt
 
-    def read_samples(self, n_samples=10, rate=0.5):
+    def read_samples(self, n_samples, rate):
         sampled_adc = []
         for i in range(n_samples):
             sampled_adc.append(self.adc.read())
@@ -84,7 +82,7 @@ class MoistureSensor(object):
 
     def message_send(self, msg):
         try:
-            print("[INFO] Sending message to SLACK")
+            print("[INFO] Sending message: '%s' -> SLACK" % msg)
             self.slack(msg)
             print("[INFO] Message sent...")
         except Exception as exc:
@@ -92,24 +90,28 @@ class MoistureSensor(object):
         finally:
             print("[INFO] %s" % msg)
 
-    def soil_sensor_check(self):
+    def soil_sensor_check(self, n_samples=10, rate=0.5):
         try:
-            samples = self.read_samples()
+            samples = self.read_samples(n_samples, rate)
             sampled_adc = average(samples)
             self._soilmoistperc = adc_map(
                 sampled_adc,
                 self.config["moisture_sensor_cal"]["dry"],
                 self.config["moisture_sensor_cal"]["wet"],
             )
-            self.ubidots.post_request({"soil_moisture": self._soilmoistperc})
+            if self._soilmoistperc <= 100:
+                print("[DEBUG] Current Soil moisture: %s%%" % self._soilmoistperc)
+                self.ubidots.post_request({"soil_moisture": self._soilmoistperc})
+
             if self._soilmoistperc <= self.config["moisture_sensor_cal"].get(
                 "Threshold", 50
             ):
                 self._water_me = True
-                self.message_send(
-                    "[INFO] Soil Moisture Sensor: %.2f%% \t %s"
-                    % (self._soilmoistperc, current_time())
+                msg = "[INFO] Soil Moisture Sensor: %.2f%% \t %s" % (
+                    self._soilmoistperc,
+                    current_time(),
                 )
+                self.message_send(msg)
             else:
                 self._water_me = False
         except Exception as exc:
@@ -122,22 +124,37 @@ class MoistureSensor(object):
         while True:
             self.soil_sensor_check()
             while self._water_me:
+                self.message_send("*" * 80)
                 self.message_send(
-                    "Note: Automatically watering the plant(s):\t %s" % current_time()
+                    "[INFO] Note: Automatically watering the plant(s):\t %s"
+                    % current_time()
                 )
+                # This is brutal: Refactor
                 if not self.water_pump.pump_status:
+                    self.message_send("Turning Pump On: \t %s"% current_time())
                     self.water_pump.pump_on()
                     print(
                         "[DEBUG] Setting Pump ON as water is @ %.2f%%"
                         % self._soilmoistperc
                     )
-                if self.water_pump.pump_status:
+                    utime.sleep(self.config["water_pump_time"].get("delay_pump_on", 1))
+                    self.message_send("Turning Pump Off: \t %s"% current_time())
+                    self.water_pump.pump_off()
+                    if self.water_pump.pump_status:
+                        msg = "[FATAL] Could not switch Pump off, resetting device."
+                        print(msg)
+                        self.message_send(msg)
+                        machine.reset()
+
                     print("[DEBUG] Checking Soil Moisture Status...")
-                    self.soil_sensor_check()
+                    self.soil_sensor_check(n_samples=1, rate=0.1)
                     print("[DEBUG] Soil Moisture Percent @ %.2f%%" % self._soilmoistperc)
-                self.water_pump.pump_off()
-                print(
-                    "[DEBUG] Setting Pump OFF as water is @ %.2f%%" % self._soilmoistperc
-                )
+
+                if self.water_pump.pump_status:
+                    self.water_pump.pump_off()
+                    print(
+                        "[DEBUG] Setting Pump OFF as water is @ %.2f%%"
+                        % self._soilmoistperc
+                    )
 
             utime.sleep(secs)
