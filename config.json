@@ -18,9 +18,6 @@
     "water_pump_time": {
         "delay_pump_on": 3
     },
-    "water_pump_time": {
-        "": 2
-    },
     "slack_auth": {
         "app_id": "",
         "secret_id": "",
