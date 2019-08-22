@@ -1,26 +1,14 @@
 ######################################################################
 # User configuration
 ######################################################################
-.PHONY: erase flash reset firmware upload_all check repl bootstrap
 
-help:
-	@echo "Please use \`make <target>' where <target> is one of"
-	@echo "   erase : Eraze flash on chip"
-	@echo "   flash : Upload new firmware to chip"
-	@echo "   reset : Hard reset chip"
-	@echo "   firmware: Download latest firmware from http://www.micropython.org/download#esp8266"
-	@echo "   upload: Upload latest firmware"
-	@echo "   check: Compile Python code "
-	@echo "   repl: Open repl on chip"
-	@echo "   bootstrap: eraze, flash, and upload"
+# Linux Debian/Ubuntu
 
 # Serial port
-# Linux Debian/Ubuntu
 PORT=ttyUSB0
 SPEED=460800
 
 # Path to programs
-# Install with `sudo pip install -U mpfshell esptool`
 MPFSHELL=mpfshell --open $(PORT)
 ESPTOOL=esptool.py
 FIRMWARE=./firmware.bin
@@ -37,26 +25,31 @@ FILES=boot.py \
 	water_pump.py \
 	utils.py
 
+.PHONY: erase # : Eraze flash on chip
 erase:
 	$(ESPTOOL) --port /dev/$(PORT) erase_flash
-	@sleep 3
+	@sleep 5
 
+.PHONY: flash # : Upload new firmware to chip
 flash: firmware
 	$(ESPTOOL) --port /dev/$(PORT) --baud $(SPEED) write_flash --flash_size=detect 0 $(FIRMWARE)
 	@sleep 10
 	@echo 'Power cycle the device'
 
+.PHONY: reset # : Hard reset chip
 reset:
 	$(MPFSHELL) --reset
 
+.PHONY: install
 install:
 	@bash -c "if ! command -v esptool.py >/dev/null 2>&1; then pip install --user -U esptool;fi"
 	@bash -c "if ! command -v mpfshell >/dev/null 2>&1; then pip install --user -U mpfshell;fi"
 
+.PHONY: firmware # : Download latest firmware from http://www.micropython.org/download#esp8266
 firmware:
 	@bash -c "[ -f $(FIRMWARE) ] || wget -O ./firmware.bin http://micropython.org/resources/firmware/"$(FIRMWAREVERSION)
 
-# Upload all
+.PHONY: upload_all # : Upload latest firmware"
 upload_all:
 	for f in $(FILES); do \
 		echo installing $$f; \
@@ -65,12 +58,28 @@ upload_all:
 		echo done installing; \
 	done
 
+.PHONY: check # : Compile Python code
 check:
 	python3 -m py_compile *.py
 	rm -rf __pycache__
 	rm -f *.pyc
 
+.PHONY: repl # : Open repl on chip
 repl:
 	$(MPFSHELL) -c repl
 
-bootstrap: install erase flash check upload_all
+.PHONY: all # :Bootstrap ie eraze, flash, and upload
+all: install erase flash check upload_all clean
+
+.PHONY: help # : Please use \`make <target>' where <target> is one of
+help:
+	@grep '^.PHONY: .* #' Makefile | sed 's/\.PHONY: \(.*\) # \(.*\)/\1 \2/' | expand -t20
+
+.PHONY: clean
+clean:
+	rm -rf $(FIRMWARE)
+	rm -rf *.pyc
+
+.PHONY: test
+test:
+	ls
