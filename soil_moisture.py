@@ -80,15 +80,16 @@ class MoistureSensor(object):
         force_garbage_collect()
         return sampled_adc
 
-    def message_send(self, msg):
+    def message_send(self, msg, debug=False):
+        if debug:
+            print(msg)
+
         try:
-            print("[INFO] Sending message: '%s' -> SLACK" % msg)
+            print("[INFO] Sending message -> SLACK")
             self.slack(msg)
             print("[INFO] Message sent...")
         except Exception as exc:
             print("[ERROR] Could not send SLACK message: %s" % str(exc))
-        finally:
-            print("[INFO] %s" % msg)
 
     def soil_sensor_check(self, n_samples=10, rate=0.5):
         try:
@@ -107,11 +108,11 @@ class MoistureSensor(object):
                 "Threshold", 50
             ):
                 self._water_me = True
-                msg = "[INFO] Soil Moisture Sensor: %.2f%% \t %s" % (
-                    self._soilmoistperc,
-                    current_time(),
+                self.message_send(
+                    "[INFO] Soil Moisture Sensor: %.2f%% \t %s"
+                    % (self._soilmoistperc, current_time()),
+                    True,
                 )
-                self.message_send(msg)
             else:
                 self._water_me = False
         except Exception as exc:
@@ -119,42 +120,54 @@ class MoistureSensor(object):
         finally:
             force_garbage_collect()
 
-    def run_timer(self, secs=60):
-        print("[INFO] Timer Initialised, callback will be ran every %s seconds!!!" % secs)
+    def run_timer(self, secs):
+        self.message_send(
+            "[INFO] Timer Initialised, callback will be ran every %s seconds!!!" % secs,
+            True,
+        )
         while True:
             self.soil_sensor_check()
             while self._water_me:
                 self.message_send("*" * 80)
                 self.message_send(
                     "[INFO] Note: Automatically watering the plant(s):\t %s"
-                    % current_time()
+                    % current_time(),
+                    True,
                 )
                 # This is brutal: Refactor
                 if not self.water_pump.pump_status:
-                    self.message_send("Turning Pump On: \t %s"% current_time())
+                    self.message_send("Turning Pump On: \t %s" % current_time(), True)
                     self.water_pump.pump_on()
-                    print(
+                    self.message_send(
                         "[DEBUG] Setting Pump ON as water is @ %.2f%%"
-                        % self._soilmoistperc
+                        % self._soilmoistperc,
+                        True,
                     )
                     utime.sleep(self.config["water_pump_time"].get("delay_pump_on", 1))
-                    self.message_send("Turning Pump Off: \t %s"% current_time())
+                    self.message_send("Turning Pump Off: \t %s" % current_time(), True)
                     self.water_pump.pump_off()
                     if self.water_pump.pump_status:
-                        msg = "[FATAL] Could not switch Pump off, resetting device."
-                        print(msg)
-                        self.message_send(msg)
+                        self.message_send(
+                            "[FATAL] Could not switch Pump off, resetting device.", True
+                        )
                         machine.reset()
 
-                    print("[DEBUG] Checking Soil Moisture Status...")
-                    self.soil_sensor_check(n_samples=1, rate=0.1)
-                    print("[DEBUG] Soil Moisture Percent @ %.2f%%" % self._soilmoistperc)
-
+                    self.message_send(
+                        "[DEBUG] Wait for few seconds for soil to soak", True
+                    )
+                    utime.sleep(10)
+                    self.message_send("[DEBUG] Checking Soil Moisture Status...", True)
+                    self.soil_sensor_check(n_samples=5, rate=1)
+                    self.message_send(
+                        "[DEBUG] Soil Moisture Percent @ %.2f%%" % self._soilmoistperc,
+                        True,
+                    )
                 if self.water_pump.pump_status:
                     self.water_pump.pump_off()
-                    print(
+                    self.message_send(
                         "[DEBUG] Setting Pump OFF as water is @ %.2f%%"
-                        % self._soilmoistperc
+                        % self._soilmoistperc,
+                        True,
                     )
-
+            print("[DEBUG] Sleep for %s seconds" % secs)
             utime.sleep(secs)
