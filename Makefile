@@ -25,7 +25,7 @@ FILES=boot.py \
 	water_pump.py \
 	utils.py
 
-.PHONY: erase # : Eraze flash on chip
+.PHONY: erase # : Erase flash on chip
 erase:
 	$(ESPTOOL) --port /dev/$(PORT) erase_flash
 	@sleep 5
@@ -68,7 +68,7 @@ check:
 repl:
 	$(MPFSHELL) -c repl
 
-.PHONY: all # :Bootstrap ie eraze, flash, and upload
+.PHONY: all # :Bootstrap ie erase, flash, and upload
 all: install erase flash check upload_all clean
 
 .PHONY: help # : Please use \`make <target>' where <target> is one of
