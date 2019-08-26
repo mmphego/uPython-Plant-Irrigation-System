@@ -29,7 +29,7 @@ The automagic plant watering system runs on a [Wemos D1 esp8266](https://www.wem
 
 ![circuit](assets/soilmoisture.jpg)
 
-### Parts List
+### Parts Checklist
 - [x] [Wemos D1 ESP8266](https://www.banggood.com/custlink/GGvDS2tE8I)
 - [x] [Capacitive Soil Moisture Sensor](https://www.banggood.com/custlink/DKvDIM5y8T)
 - [x] [Single Channel 5V Relay Module](https://www.banggood.com/custlink/vKvv9UtdLR)
