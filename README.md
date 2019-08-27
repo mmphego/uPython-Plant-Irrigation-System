@@ -138,7 +138,7 @@ Who doesn't love viz data, added [Ubidots](https://ubidots.com/) support for Viz
 ![image](assets/ubidots.png)
 
 code:
-```
+```python
 class Ubidots:
     def __init__(self, TOKEN, device_label):
         self.url = "https://things.ubidots.com/api/v1.6/devices/{}?token={}".format(
