@@ -125,6 +125,7 @@ class MoistureSensor(object):
             "[INFO] Timer Initialised, callback will be ran every %s seconds!!!" % secs,
             True,
         )
+        self.water_pump.pump_off()
         while True:
             self.soil_sensor_check()
             while self._water_me:
