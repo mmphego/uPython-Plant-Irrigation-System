@@ -13,7 +13,7 @@
     "moisture_sensor_cal": {
         "dry": 841,
         "wet": 470,
-        "Threshold": 80,
+        "Threshold": 70,
     },
     "water_pump_time": {
         "delay_pump_on": 3
