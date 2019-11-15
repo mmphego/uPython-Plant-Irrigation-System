@@ -158,7 +158,11 @@ class MoistureSensor(object):
                     )
                     utime.sleep(10)
                     self.message_send("[DEBUG] Checking Soil Moisture Status...", True)
-                    self.soil_sensor_check(n_samples=5, rate=1)
+                    # TODO: Improve this logic
+                    for i in range(5):
+                        self.soil_sensor_check(n_samples=5, rate=2)
+                        utime.sleep(60)
+                        self.water_pump.pump_off()
                     self.message_send(
                         "[DEBUG] Soil Moisture Percent @ %.2f%%" % self._soilmoistperc,
                         True,
