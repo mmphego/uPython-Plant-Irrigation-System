@@ -89,7 +89,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-
+*_Py3
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -105,3 +105,4 @@ venv.bak/
 
 # bin files
 *.bin
+*.bk

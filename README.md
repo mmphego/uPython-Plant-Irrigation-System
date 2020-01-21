@@ -61,6 +61,11 @@ TL;DR
 
 **NOTE:** This will install [`esptool`](https://github.com/espressif/esptool) and [`mpfshell`](https://github.com/wendlers/mpfshell) for communicating with ESP chips and for serial connection with MicroPython boards, Erase and flash the chip with firmware `esp8266-20190125-v1.10.bin` as well as upload the required files to the ESP.
 
+Alternatively:
+```bash
+python3 -m pip install -U mpfshell esptool
+```
+
 Click [here](https://www.micropython.org/download) to get the latest uPython firmware.
 
 ### Setup config

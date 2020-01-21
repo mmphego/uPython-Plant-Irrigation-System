@@ -42,8 +42,8 @@ reset:
 
 .PHONY: install
 install:
-	@bash -c "if ! command -v esptool.py >/dev/null 2>&1; then pip install --user -U esptool;fi"
-	@bash -c "if ! command -v mpfshell >/dev/null 2>&1; then pip install --user -U mpfshell;fi"
+	@bash -c "if ! command -v esptool.py >/dev/null 2>&1; then python3 -m pip install --user -U esptool;fi"
+	@bash -c "if ! command -v mpfshell >/dev/null 2>&1; then python3 -m pip install --user -U mpfshell;fi"
 
 .PHONY: firmware # : Download latest firmware from http://www.micropython.org/download#esp8266
 firmware:
