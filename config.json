@@ -4,8 +4,8 @@
         "Water_Pump_Pin": 12
     },
     "wifi_config": {
-        "ssid": "KATCPT",
-        "password": "katCPT#12"
+        "ssid": "",
+        "password": ""
     },
     "MQTT_config": {
         "Host": null,
